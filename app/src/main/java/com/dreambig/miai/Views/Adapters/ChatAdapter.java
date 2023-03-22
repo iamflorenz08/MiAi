@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dreambig.miai.Models.BotMessageModel;
 import com.dreambig.miai.Models.ChatModel;
 import com.dreambig.miai.Utils.ChatRole;
 import com.dreambig.miai.databinding.BotChatLayoutBinding;
@@ -15,11 +16,11 @@ import com.dreambig.miai.databinding.UserChatLayoutBinding;
 import java.util.ArrayList;
 
 public class ChatAdapter extends RecyclerView.Adapter {
-    private ArrayList<ChatModel> chats = new ArrayList<>();
+    private ArrayList<BotMessageModel> chats = new ArrayList<>();
 
     @Override
     public int getItemViewType(int position) {
-        if(chats.get(position).getType() == ChatRole.USER){
+        if(chats.get(position).getRole().equals("user")){
             return ChatRole.USER;
         }
         return ChatRole.BOT;
@@ -39,15 +40,15 @@ public class ChatAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ChatModel chat = chats.get(position);
+        BotMessageModel chat = chats.get(position);
 
-        if(chat.getType() == ChatRole.USER){
+        if(chat.getRole() == "user"){
             UserChatLayoutBinding binding = ((UserViewHolder) holder).binding;
-            binding.tvMessage.setText(chat.getMessage().trim());
+            binding.tvMessage.setText(chat.getContent().trim());
         }
         else{
             BotChatLayoutBinding binding = ((BotViewHolder) holder).binding;
-            binding.tvMessage.setText(chat.getMessage().trim());
+            binding.tvMessage.setText(chat.getContent().trim());
         }
 
     }
@@ -57,8 +58,8 @@ public class ChatAdapter extends RecyclerView.Adapter {
         return chats.size();
     }
 
-    public void addChat(ChatModel chat){
-        chats.add(chat);
+    public void setChats(ArrayList<BotMessageModel> chats) {
+        this.chats = chats;
         notifyDataSetChanged();
     }
 

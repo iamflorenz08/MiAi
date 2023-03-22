@@ -5,10 +5,13 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.dreambig.miai.Models.BotMessageModel;
 import com.dreambig.miai.Models.BotRequestModel;
 import com.dreambig.miai.Models.BotResponseModel;
 import com.dreambig.miai.Networks.OpenAiService;
 import com.dreambig.miai.Utils.Env;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -16,7 +19,7 @@ import retrofit2.Response;
 
 public class OpenAiRepo {
     private OpenAiService openAiService;
-    private MutableLiveData<BotResponseModel> botResponse = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<BotMessageModel>> botResponse = new MutableLiveData<>();
 
     public OpenAiRepo(OpenAiService openAiService){
         this.openAiService = openAiService;
@@ -27,7 +30,9 @@ public class OpenAiRepo {
             @Override
             public void onResponse(Call<BotResponseModel> call, Response<BotResponseModel> response) {
                 if(response.isSuccessful()){
-                    botResponse.postValue(response.body());
+                    ArrayList<BotMessageModel> messages = new ArrayList<>(botResponse.getValue());
+                    messages.add(response.body().getChoices().get(0).getMessage());
+                    botResponse.postValue(messages);
                     return;
                 }
 
@@ -43,7 +48,7 @@ public class OpenAiRepo {
         });
     }
 
-    public LiveData<BotResponseModel> getBotResponse() {
+    public MutableLiveData<ArrayList<BotMessageModel>> getBotResponse() {
         return botResponse;
     }
 }

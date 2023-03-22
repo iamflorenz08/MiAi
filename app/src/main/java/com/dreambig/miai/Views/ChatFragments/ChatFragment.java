@@ -14,12 +14,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.dreambig.miai.Models.BotMessageModel;
 import com.dreambig.miai.Models.BotResponseModel;
 import com.dreambig.miai.Models.ChatModel;
 import com.dreambig.miai.R;
 import com.dreambig.miai.Utils.ChatRole;
 import com.dreambig.miai.Views.Adapters.ChatAdapter;
 import com.dreambig.miai.databinding.FragmentChatBinding;
+
+import java.util.ArrayList;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -40,32 +43,23 @@ public class ChatFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentChatBinding.inflate(inflater, container, false);
-        mViewModel.init();
+
         chatAdapter = new ChatAdapter();
-
-
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mViewModel.init("Hello! How may I help you?");
 
         binding.rvConversation.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         binding.rvConversation.setAdapter(chatAdapter);
-        chatAdapter.addChat(new ChatModel(
-                ChatRole.BOT,
-                "Hello, how may I assist you today?"
-        ));
 
-        mViewModel.getBotResponse().observe(getViewLifecycleOwner(), new Observer<BotResponseModel>() {
+        mViewModel.getBotResponse().observe(getViewLifecycleOwner(), new Observer<ArrayList<BotMessageModel>>() {
             @Override
-            public void onChanged(BotResponseModel botResponse) {
-                chatAdapter.addChat(new ChatModel(
-                        ChatRole.BOT,
-                        botResponse.getChoices().get(0).getMessage().getContent()
-                ));
-
+            public void onChanged(ArrayList<BotMessageModel> botMessageModels) {
+                chatAdapter.setChats(botMessageModels);
                 binding.rvConversation.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
             }
         });
@@ -74,13 +68,7 @@ public class ChatFragment extends Fragment {
         binding.btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chatAdapter.addChat(new ChatModel(
-                        ChatRole.USER,
-                        binding.etMessage.getText().toString()
-                ));
-
                 mViewModel.askBot(binding.etMessage.getText().toString());
-                binding.rvConversation.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
                 binding.etMessage.setText(null);
             }
         });
