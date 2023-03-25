@@ -10,6 +10,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,14 +67,29 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        mViewModel.getIsTyping().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean isTyping) {
+                if (isTyping){
+                    chatAdapter.addChats(
+                            new BotMessageModel("typing", null)
+                    );
+                    binding.rvConversation.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
+                }
+            }
+        });
 
         binding.btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mViewModel.askBot(binding.etMessage.getText().toString());
-                binding.etMessage.setText(null);
+                if(!binding.etMessage.getText().toString().isEmpty()){
+                    mViewModel.askBot(binding.etMessage.getText().toString());
+                    binding.etMessage.setText(null);
+                    binding.etMessage.clearFocus();
+                }
             }
         });
+
     }
 
 

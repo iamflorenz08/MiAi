@@ -20,28 +20,32 @@ import retrofit2.Response;
 public class OpenAiRepo {
     private OpenAiService openAiService;
     private MutableLiveData<ArrayList<BotMessageModel>> botResponse = new MutableLiveData<>();
+    private MutableLiveData<Boolean> isTyping = new MutableLiveData<>(false);
 
     public OpenAiRepo(OpenAiService openAiService){
         this.openAiService = openAiService;
     }
 
     public void loadBotResponse(BotRequestModel request){
+
         openAiService.getBotResponse(Env.API_KEY, request).enqueue(new Callback<BotResponseModel>() {
             @Override
             public void onResponse(Call<BotResponseModel> call, Response<BotResponseModel> response) {
                 if(response.isSuccessful()){
-                    ArrayList<BotMessageModel> messages = new ArrayList<>(botResponse.getValue());
+                    ArrayList<BotMessageModel> messages = botResponse.getValue();
                     messages.add(response.body().getChoices().get(0).getMessage());
                     botResponse.postValue(messages);
+                    isTyping.setValue(false);
                     return;
                 }
-
+                Log.d("mydev", "onResponse: " + response.toString());
                 loadBotResponse(request);
                 return;
             }
 
             @Override
             public void onFailure(Call<BotResponseModel> call, Throwable t) {
+                Log.d("mydev", "onFailure: " + t.getMessage());
                 loadBotResponse(request);
                 return;
             }
@@ -50,5 +54,9 @@ public class OpenAiRepo {
 
     public MutableLiveData<ArrayList<BotMessageModel>> getBotResponse() {
         return botResponse;
+    }
+
+    public MutableLiveData<Boolean> getIsTyping() {
+        return isTyping;
     }
 }

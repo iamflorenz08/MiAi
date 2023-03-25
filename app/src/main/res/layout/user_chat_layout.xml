@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:maxEms="15"
+            android:gravity="fill_horizontal"
             android:text="What is google? and why is it important hehe?" />
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
